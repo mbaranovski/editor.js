@@ -32,7 +32,7 @@ interface BlockConstructorOptions {
    */
   name: string;
   /**
-   * Tool's id
+   * Block's unique ID
    */
   id: string;
 
@@ -115,6 +115,9 @@ export default class Block {
    * Block Tool`s name
    */
   public name: string;
+  /**
+   * Block's unique ID
+   */
   public id: string;
 
   /**

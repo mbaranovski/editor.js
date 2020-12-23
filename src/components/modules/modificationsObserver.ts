@@ -147,6 +147,7 @@ export default class ModificationsObserver extends Module {
     };
 
     for (const mutation of mutationList) {
+      console.log("MICHAL: mutation.removedNodes", mutation.removedNodes);
       switch (mutation.type) {
         case 'childList':
           contentMutated = true;

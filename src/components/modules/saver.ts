@@ -53,7 +53,8 @@ export default class Saver extends Module {
   /**
    * Composes new chain of Promises to fire them alternatelly
    *
-   * @returns {OutputData}
+   * @param {string} blockId - Block Id
+   * @returns {SavedData}
    */
   public async saveById(blockId: string): Promise<Pick<SavedData, 'data' | 'tool' | 'id'>> {
     const { BlockManager, Sanitizer, ModificationsObserver } = this.Editor;

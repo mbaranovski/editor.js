@@ -274,7 +274,7 @@ export default class BlockManager extends Module {
       newIndex = this.currentBlockIndex + (replace ? 0 : 1);
     }
     if (id === null)
-      console.warn(`Generating BlockID for the ${tool} with data: ${data}`);
+      console.warn(`Generating BlockID for the ${tool} with data: ${JSON.stringify(data)}`);
     const blockId = id === null ? nanoid() : id;
     const block = this.composeBlock({
       id: blockId,
@@ -527,6 +527,17 @@ export default class BlockManager extends Module {
    */
   public getBlockById(id: string): Block {
     return this._blocks.array.find(b => b.id === id);
+  }
+
+  /**
+   * Returns Block index by passed id
+   *
+   * @param {string} id - id to get
+   *
+   * @returns {number}
+   */
+  public getBlockIndexById(id: string): number {
+    return this._blocks.array.findIndex(b => b.id === id);
   }
 
   /**
