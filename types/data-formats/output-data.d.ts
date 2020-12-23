@@ -8,6 +8,8 @@ export interface OutputBlockData {
    * Too type
    */
   type: string;
+
+  id: string;
   /**
    * Saved Block data
    */

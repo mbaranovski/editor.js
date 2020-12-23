@@ -2,6 +2,7 @@ import {ToolConstructable, ToolSettings} from '../tools';
 import {API, LogLevels, OutputData} from '../index';
 import {SanitizerConfig} from './sanitizer-config';
 import {I18nConfig} from './i18n-config';
+import {SavedData} from "../data-formats";
 
 export interface EditorConfig {
   /**
@@ -88,8 +89,9 @@ export interface EditorConfig {
   /**
    * Fires when something changed in DOM
    * @param {API} api - editor.js api
+   * @param {[id: string]: SavedData} changes - key(object id) value(saved data) pairs of individual blocks' changes
    */
-  onChange?(api: API): void;
+  onChange?(api: API, changes: {[id: string]: Pick<SavedData, 'data' | 'tool' | 'id'>}): void;
 
   /**
    * Defines default toolbar for all tools.

@@ -6,8 +6,8 @@
  * @version 2.0.0
  */
 import Module from '../__module';
-import { OutputData } from '../../../types';
-import { ValidatedData } from '../../../types/data-formats';
+import {OutputBlockData, OutputData} from '../../../types';
+import {SavedData, ValidatedData} from '../../../types/data-formats';
 import Block from '../block';
 import * as _ from '../utils';
 
@@ -51,6 +51,33 @@ export default class Saver extends Module {
   }
 
   /**
+   * Composes new chain of Promises to fire them alternatelly
+   *
+   * @returns {OutputData}
+   */
+  public async saveById(blockId: string): Promise<Pick<SavedData, 'data' | 'tool' | 'id'>> {
+    const { BlockManager, Sanitizer, ModificationsObserver } = this.Editor;
+    const block = BlockManager.getBlockById(blockId);
+
+    /**
+     * Disable modifications observe while saving
+     */
+    ModificationsObserver.disable();
+
+    try {
+      const { data, id, tool } = (await Sanitizer.sanitizeBlocks([await this.getSavedData(block)] as Array<Pick<SavedData, 'data' | 'tool' | 'id'>>))[0];
+
+      return {
+        data,
+        id,
+        tool,
+      };
+    } finally {
+      ModificationsObserver.enable();
+    }
+  }
+
+  /**
    * Saves and validates
    *
    * @param {Block} block - Editor's Tool
@@ -62,6 +89,7 @@ export default class Saver extends Module {
 
     return {
       ...blockData,
+      id: block.id,
       isValid,
     };
   }
@@ -74,11 +102,11 @@ export default class Saver extends Module {
    */
   private makeOutput(allExtractedData): OutputData {
     let totalTime = 0;
-    const blocks = [];
+    const blocks: OutputBlockData[] = [];
 
     _.log('[Editor.js saving]:', 'groupCollapsed');
 
-    allExtractedData.forEach(({ tool, data, time, isValid }) => {
+    allExtractedData.forEach(({ tool, data, time, isValid, id }) => {
       totalTime += time;
 
       /**
@@ -107,6 +135,7 @@ export default class Saver extends Module {
       blocks.push({
         type: tool,
         data,
+        id,
       });
     });
 

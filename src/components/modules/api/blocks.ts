@@ -23,6 +23,7 @@ export default class BlocksAPI extends Module {
       swap: (fromIndex: number, toIndex: number): void => this.swap(fromIndex, toIndex),
       move: (toIndex: number, fromIndex?: number): void => this.move(toIndex, fromIndex),
       getBlockByIndex: (index: number): BlockAPIInterface | void => this.getBlockByIndex(index),
+      getBlockById: (id: string): BlockAPIInterface | void => this.getBlockById(id),
       getCurrentBlockIndex: (): number => this.getCurrentBlockIndex(),
       getBlocksCount: (): number => this.getBlocksCount(),
       stretchBlock: (index: number, status = true): void => this.stretchBlock(index, status),
@@ -59,6 +60,23 @@ export default class BlocksAPI extends Module {
 
     if (block === undefined) {
       _.logLabeled('There is no block at index `' + index + '`', 'warn');
+
+      return;
+    }
+
+    return new BlockAPI(block);
+  }
+
+  /**
+   * Returns BlockAPI object by Block id
+   *
+   * @param {string} id - id to get
+   */
+  public getBlockById(id: string): BlockAPIInterface | void {
+    const block = this.Editor.BlockManager.getBlockById(id);
+
+    if (block === undefined) {
+      _.logLabeled('There is no block with id `' + id + '`', 'warn');
 
       return;
     }
@@ -200,19 +218,22 @@ export default class BlocksAPI extends Module {
    * @param {ToolConfig} config — Tool config
    * @param {number?} index — index where to insert new Block
    * @param {boolean?} needToFocus - flag to focus inserted Block
+   * @param {string?} id - unique block id, if not provided one will be generated
    */
   public insert = (
     type: string = this.config.defaultBlock,
     data: BlockToolData = {},
     config: ToolConfig = {},
     index?: number,
-    needToFocus?: boolean
+    needToFocus?: boolean,
+    id?: string
   ): void => {
     this.Editor.BlockManager.insert({
       tool: type,
       data,
       index,
       needToFocus,
+      id,
     });
   }
 

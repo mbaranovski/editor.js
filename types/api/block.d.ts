@@ -9,6 +9,10 @@ export interface BlockAPI {
    * Tool name
    */
   readonly name: string;
+  /**
+   * Block id
+   */
+  readonly id: string;
 
   /**
    * Tool config passed on Editor's initialization

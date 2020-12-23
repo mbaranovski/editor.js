@@ -22,6 +22,14 @@ function BlockAPI(
     get name(): string {
       return block.name;
     },
+    /**
+     * Block id
+     *
+     * @returns {string}
+     */
+    get id(): string {
+      return block.id;
+    },
 
     /**
      * Tool config passed on Editor's initialization

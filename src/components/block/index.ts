@@ -31,6 +31,10 @@ interface BlockConstructorOptions {
    * Tool's name
    */
   name: string;
+  /**
+   * Tool's id
+   */
+  id: string;
 
   /**
    * Initial Block data
@@ -111,6 +115,7 @@ export default class Block {
    * Block Tool`s name
    */
   public name: string;
+  public id: string;
 
   /**
    * Instance of the Tool Block represents
@@ -200,6 +205,7 @@ export default class Block {
   /**
    * @param {object} options - block constructor options
    * @param {string} options.name - Tool name that passed on initialization
+   * @param {string} options.name - Block id that passed on initialization
    * @param {BlockToolData} options.data - Tool's initial data
    * @param {BlockToolConstructable} options.Tool — Tool's class
    * @param {ToolSettings} options.settings - default tool's config
@@ -208,6 +214,7 @@ export default class Block {
    */
   constructor({
     name,
+    id,
     data,
     Tool,
     settings,
@@ -215,6 +222,7 @@ export default class Block {
     readOnly,
   }: BlockConstructorOptions) {
     this.name = name;
+    this.id = id;
     this.class = Tool;
     this.settings = settings;
     this.config = settings.config || {};
@@ -550,6 +558,7 @@ export default class Block {
         measuringEnd = window.performance.now();
 
         return {
+          id: this.id,
           tool: this.name,
           data: finishedExtraction,
           time: measuringEnd - measuringStart,

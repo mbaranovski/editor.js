@@ -8,6 +8,8 @@
 import Module from '../__module';
 import * as _ from '../utils';
 import Block from '../block';
+import {SavedData} from "../../../types/data-formats";
+import Sanitizer from "./sanitizer";
 
 /**
  *
@@ -35,11 +37,11 @@ export default class ModificationsObserver extends Module {
    *
    * @type {Function}
    */
-  private mutationDebouncer = _.debounce(() => {
+  private mutationDebouncer = _.debounceDOMutations((changes) => {
     this.updateNativeInputs();
 
     if (_.isFunction(this.config.onChange)) {
-      this.config.onChange(this.Editor.API.methods);
+      this.config.onChange(this.Editor.API.methods, changes);
     }
   }, ModificationsObserver.DebounceTimer);
 
@@ -58,7 +60,7 @@ export default class ModificationsObserver extends Module {
       this.observer.disconnect();
     }
     this.observer = null;
-    this.nativeInputs.forEach((input) => this.Editor.Listeners.off(input, 'input', this.mutationDebouncer));
+    this.nativeInputs.forEach((input) => this.Editor.Listeners.off(input, 'input', this.mutationDebouncer as () => void));
     this.mutationDebouncer = null;
   }
 
@@ -119,7 +121,7 @@ export default class ModificationsObserver extends Module {
    * @param {MutationRecord[]} mutationList - list of mutations
    * @param {MutationObserver} observer - observer instance
    */
-  private mutationHandler(mutationList: MutationRecord[], observer: MutationObserver): void {
+  private async mutationHandler(mutationList: MutationRecord[], observer: MutationObserver): Promise<void> {
     /**
      * Skip mutations in stealth mode
      */
@@ -133,27 +135,44 @@ export default class ModificationsObserver extends Module {
      * 2) functional changes. On each client actions we set functional identifiers to interact with user
      */
     let contentMutated = false;
+    const updates: Pick<SavedData, 'data' | 'tool' | 'id'>[] = [];
 
-    mutationList.forEach((mutation) => {
+    const addChangeToUpdatesList = async (): Promise<void> => {
+      const currentBlock = await this.Editor.BlockManager.currentBlock;
+      if (currentBlock) {
+        const savedData = await this.Editor.Saver.saveById(currentBlock.id);
+        if (savedData)
+          updates.push(savedData);
+      }
+    };
+
+    for (const mutation of mutationList) {
       switch (mutation.type) {
         case 'childList':
-        case 'characterData':
           contentMutated = true;
+          await addChangeToUpdatesList();
+
           break;
+        case 'characterData': {
+          contentMutated = true;
+          await addChangeToUpdatesList();
+          break;
+        }
         case 'attributes':
           /**
            * Changes on Element.ce-block usually is functional
            */
           if (!(mutation.target as Element).classList.contains(Block.CSS.wrapper)) {
             contentMutated = true;
+            await addChangeToUpdatesList();
           }
           break;
       }
-    });
+    };
 
     /** call once */
     if (contentMutated) {
-      this.mutationDebouncer();
+      this.mutationDebouncer(updates);
     }
   }
 
@@ -169,7 +188,7 @@ export default class ModificationsObserver extends Module {
 
     this.nativeInputs = Array.from(this.Editor.UI.nodes.redactor.querySelectorAll('textarea, input, select'));
 
-    this.nativeInputs.forEach((input) => this.Editor.Listeners.on(input, 'input', this.mutationDebouncer));
+    this.nativeInputs.forEach((input) => this.Editor.Listeners.on(input, 'input', this.mutationDebouncer as () => void));
   }
 
   /**

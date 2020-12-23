@@ -12,6 +12,7 @@ import $ from '../dom';
 import * as _ from '../utils';
 import Blocks from '../blocks';
 import { BlockToolConstructable, BlockToolData, PasteEvent } from '../../../types';
+import {nanoid} from 'nanoid';
 
 /**
  * @typedef {BlockManager} BlockManager
@@ -219,12 +220,13 @@ export default class BlockManager extends Module {
    *
    * @returns {Block}
    */
-  public composeBlock({ tool, data = {} }: {tool: string; data?: BlockToolData}): Block {
+  public composeBlock({ tool, data = {}, id }: {tool: string; id: string; data?: BlockToolData}): Block {
     const readOnly = this.Editor.ReadOnly.isEnabled;
     const settings = this.Editor.Tools.getToolSettings(tool);
     const Tool = this.Editor.Tools.available[tool] as BlockToolConstructable;
     const block = new Block({
       name: tool,
+      id,
       data,
       Tool,
       settings,
@@ -253,12 +255,14 @@ export default class BlockManager extends Module {
    */
   public insert({
     tool = this.config.defaultBlock,
+    id = null,
     data = {},
     index,
     needToFocus = true,
     replace = false,
   }: {
     tool?: string;
+    id?: string | null;
     data?: BlockToolData;
     index?: number;
     needToFocus?: boolean;
@@ -269,8 +273,11 @@ export default class BlockManager extends Module {
     if (newIndex === undefined) {
       newIndex = this.currentBlockIndex + (replace ? 0 : 1);
     }
-
+    if (id === null)
+      console.warn(`Generating BlockID for the ${tool} with data: ${data}`);
+    const blockId = id === null ? nanoid() : id;
     const block = this.composeBlock({
+      id: blockId,
       tool,
       data,
     });
@@ -304,6 +311,7 @@ export default class BlockManager extends Module {
       data,
       index: this.currentBlockIndex,
       replace: true,
+      id: this.currentBlock.id,
     });
   }
 
@@ -344,7 +352,9 @@ export default class BlockManager extends Module {
    * @returns {Block} inserted Block
    */
   public insertDefaultBlockAtIndex(index: number, needToFocus = false): Block {
-    const block = this.composeBlock({ tool: this.config.defaultBlock });
+    console.warn(`Generating BlockID for the default block at index: ${index}`);
+    const id = nanoid();
+    const block = this.composeBlock({ tool: this.config.defaultBlock, id });
 
     this._blocks[index] = block;
 
@@ -506,6 +516,17 @@ export default class BlockManager extends Module {
    */
   public getBlockByIndex(index): Block {
     return this._blocks[index];
+  }
+
+  /**
+   * Returns Block by passed id
+   *
+   * @param {string} id - id to get
+   *
+   * @returns {Block}
+   */
+  public getBlockById(id: string): Block {
+    return this._blocks.array.find(b => b.id === id);
   }
 
   /**

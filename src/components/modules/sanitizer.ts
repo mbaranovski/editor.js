@@ -61,8 +61,8 @@ export default class Sanitizer extends Module {
    * @param {Array<{tool, data: BlockToolData}>} blocksData - blocks' data to sanitize
    */
   public sanitizeBlocks(
-    blocksData: Array<Pick<SavedData, 'data' | 'tool'>>
-  ): Array<Pick<SavedData, 'data' | 'tool'>> {
+    blocksData: Array<Pick<SavedData, 'data' | 'tool' | 'id'>>
+  ): Array<Pick<SavedData, 'data' | 'tool' | 'id'>> {
     return blocksData.map((block) => {
       const toolConfig = this.composeToolConfig(block.tool);
 

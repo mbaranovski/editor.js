@@ -4,6 +4,7 @@ import { EditorConfig, OutputData, SanitizerConfig } from '../../types';
 import { EditorModules } from '../types-internal/editor-modules';
 import I18n from './i18n';
 import { CriticalError } from './errors/critical';
+import {nanoid} from "nanoid";
 
 /**
  * @typedef {Core} Core - editor core class
@@ -175,6 +176,7 @@ export default class Core {
      */
     const defaultBlockData = {
       type: this.config.defaultBlock,
+      id: nanoid(),
       data: {},
     };
 

@@ -5,6 +5,7 @@ import {BlockToolData} from '../tools';
  */
 export interface SavedData {
   tool: string;
+  id: string;
   data: BlockToolData;
   time: number;
 }
@@ -14,6 +15,7 @@ export interface SavedData {
  */
 export interface ValidatedData {
   tool?: string;
+  id?: string;
   data?: BlockToolData;
   time?: number;
   isValid: boolean;

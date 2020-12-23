@@ -759,11 +759,11 @@ export default class Paste extends Module {
    *
    * @returns {void}
    */
-  private insertEditorJSData(blocks: Array<Pick<SavedData, 'data' | 'tool'>>): void {
+  private insertEditorJSData(blocks: Array<Pick<SavedData, 'data' | 'tool' | 'id'>>): void {
     const { BlockManager, Sanitizer, Tools } = this.Editor;
     const sanitizedBlocks = Sanitizer.sanitizeBlocks(blocks);
 
-    sanitizedBlocks.forEach(({ tool, data }, i) => {
+    sanitizedBlocks.forEach(({ tool, data, id }, i) => {
       let needToReplaceCurrentBlock = false;
 
       if (i === 0) {
@@ -774,6 +774,7 @@ export default class Paste extends Module {
 
       BlockManager.insert({
         tool,
+        id,
         data,
         replace: needToReplaceCurrentBlock,
       });

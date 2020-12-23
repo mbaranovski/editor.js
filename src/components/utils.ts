@@ -3,6 +3,7 @@
  */
 
 import Dom from './dom';
+import {SavedData} from "../../types/data-formats";
 
 /**
  * Possible log levels
@@ -434,8 +435,8 @@ export function debounce(func: () => void, wait?: number, immediate?: boolean): 
   return (): void => {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const context = this,
-        // eslint-disable-next-line prefer-rest-params
-        args = arguments;
+      // eslint-disable-next-line prefer-rest-params
+      args = arguments;
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     const later = () => {
@@ -451,6 +452,51 @@ export function debounce(func: () => void, wait?: number, immediate?: boolean): 
     timeout = window.setTimeout(later, wait);
     if (callNow) {
       func.apply(context, args);
+    }
+  };
+}
+
+/**
+ * Debouncing method
+ * Call method after passed time
+ *
+ * Note that this method returns Function and declared variable need to be called
+ *
+ * @param {Function} func - function that we're throttling
+ * @param {number} wait - time in milliseconds
+ * @param {boolean} immediate - call now
+ * @returns {Function}
+ */
+export function debounceDOMutations(func: (changes: {[id: string]: Pick<SavedData, 'data' | 'tool' | 'id'>}) => void, wait?: number, immediate?: boolean): (changes: Pick<SavedData, 'data' | 'tool' | 'id'>[]) => void {
+  let timeout;
+  let groupedChanges: {id: string; change: any} | {} = {};
+
+  return (changes: Pick<SavedData, 'data' | 'tool' | 'id'>[]): void => {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const context = this;
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    const later = () => {
+      timeout = null;
+      if (!immediate) {
+        func.apply(context, [groupedChanges]);
+        groupedChanges = {};
+      }
+    };
+
+    const callNow = immediate && !timeout;
+
+    window.clearTimeout(timeout);
+
+    const realChanges = changes.filter(change => change?.id && change?.tool && change?.data);
+
+    realChanges.forEach(c => {
+      groupedChanges[c.id] = c;
+    });
+
+    timeout = window.setTimeout(later, wait);
+    if (callNow) {
+      func.apply(context, [groupedChanges]);
     }
   };
 }
